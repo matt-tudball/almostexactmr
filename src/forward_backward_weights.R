@@ -35,7 +35,7 @@ fbweights <- function(PHap, Z, p, d, epsilon) {
     
     # Define remaining forward weights recursively
     if (j > 1) {
-      # Previous forward weights
+      # Forward weights one place behind
       fback <- data.frame(alphamm = Fmweight[,paste('wm_',j-1,'_',sep='')],
                           alphamf = Fmweight[,paste('wf_',j-1,'_',sep='')],
                           alphafm = Ffweight[,paste('wm_',j-1,'_',sep='')],
@@ -58,14 +58,7 @@ fbweights <- function(PHap, Z, p, d, epsilon) {
   
   # Define backward weights recursively
   for(j in p:1) {
-    dat <- data.frame(Mm = PHap[,paste('Mm_',j,'_',sep='')],
-                      Mf = PHap[,paste('Mf_',j,'_',sep='')],
-                      Fm = PHap[,paste('Fm_',j,'_',sep='')],
-                      Ff = PHap[,paste('Ff_',j,'_',sep='')],
-                      Zm = Z$m[,paste('Zm_',j,'_',sep='')],
-                      Zf = Z$f[,paste('Zf_',j,'_',sep='')])
-    
-    # Initial forward weight
+    # Initial backward weight
     if(j == p) {
       Bmweight[,paste('wm_',j,'_',sep='')] <- 1
       Bmweight[,paste('wf_',j,'_',sep='')] <- 1
@@ -73,8 +66,16 @@ fbweights <- function(PHap, Z, p, d, epsilon) {
       Bfweight[,paste('wf_',j,'_',sep='')] <- 1
     } 
     
-    # Define remaining forward weights recursively
+    # Define remaining backward weights recursively
     if(j < p) {
+      dat <- data.frame(Mm = PHap[,paste('Mm_',j+1,'_',sep='')],
+                        Mf = PHap[,paste('Mf_',j+1,'_',sep='')],
+                        Fm = PHap[,paste('Fm_',j+1,'_',sep='')],
+                        Ff = PHap[,paste('Ff_',j+1,'_',sep='')],
+                        Zm = Z$m[,paste('Zm_',j+1,'_',sep='')],
+                        Zf = Z$f[,paste('Zf_',j+1,'_',sep='')])
+      
+      # Backward weights one place ahead
       bfor <- data.frame(betamm = Bmweight[,paste('wm_',j+1,'_',sep='')],
                          betamf = Bmweight[,paste('wf_',j+1,'_',sep='')],
                          betafm = Bfweight[,paste('wm_',j+1,'_',sep='')],
