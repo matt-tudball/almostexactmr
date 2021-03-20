@@ -5,7 +5,7 @@ sampling_probability <- function(PHap, W, Jset, d, epsilon) {
   
   # Probabilities for the meiosis indicators
   r_probl <- 0.5*(1+exp(-2*sum(d[l:(j-1)])))
-  if(h == j+1) { r_probh = 1 } else { r_probh <- 0.5*(1+exp(-2*sum(d[j:(h-1)]))) }
+  if(h == j+1) { r_probh = 1 } else { r_probh <- 0.5*(1+exp(-2*sum(d[j:(h-2)]))) }
   
   # Backward weights
   beta <- data.frame(mm = W$Bm[,paste('wm_',h-1,'_',sep='')],

@@ -143,12 +143,12 @@ for(ja in 1:ladj) {
       Y <- Y0 + bd*D + Z%*%bz
       
       # ---- Forward and backward weights ---- #
-      W <- fbweights(MFHap, OHap, p, d, epsilon)
+      FBwgts <- fbweights(MFHap, OHap, p, d, epsilon)
       
       # ---- Conditional sampling probabilities ---- #
       Prob <- vector(mode="list", length=q)
       for(k in 1:q) {
-        Prob[[k]] <- sampling_probability(MFHap, W, Jset[[k]], d, epsilon)
+        Prob[[k]] <- sampling_probability(MFHap, FBwgts, Jset[[k]], d, epsilon)
       }
       Probdat <- data.frame(matrix(unlist(Prob), nrow=N, byrow=FALSE))
       Probdat <- namer(Probdat,c('Pm','Pf'),Jz)
