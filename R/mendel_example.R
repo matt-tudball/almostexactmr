@@ -83,7 +83,7 @@ Mfmat <- namer(Mfmat,'Mf',1:p)
 Fmmat <- namer(Fmmat,'Fm',1:p)
 Ffmat <- namer(Ffmat,'Ff',1:p)
 MFHap <- data.frame(Mmmat, Mfmat, Fmmat, Ffmat)
-rm(sigma, latent, threshold, out, Mmmat, Mfmat, Fmmat, Ffmat)
+rm(sigma, latent, threshold, out)
 
 # Genetic data
 OHap <- unconditional_sampler(MFHap, p, d, epsilon)
@@ -124,7 +124,8 @@ Y <- bd*D +  Z%*%bz + bm*Cm + bf*Cf + bc*C + rnorm(N,0,sqrt(0.7))
 rm(a,ac,af,am,az,b,bc,bf,bm,bz,C,Cf,Cm,Hset,Jy,k,meansum,type)
 
 # ---- Forward and backward weights ---- #
-FBwgts <- fbweights(MFHap, OHap, p, d, epsilon)
+MWgt <- fbweights(Mmmat, Mfmat, OHap$m, p, d, epsilon)
+FWgt <- fbweights(Fmmat, Ffmat, OHap$f, p, d, epsilon)
 
 # ---- Visualise the data ---- #
 
@@ -135,9 +136,9 @@ round(data.frame(G[,'G_25_'], D, Y, MFHapG[,grepl(paste('_',25,'_', sep=''), col
 Gres <- matrix(nrow=N,ncol=q)
 Prob <- vector(mode="list", length=q)
 for(k in 1:q) {
-  Prob[[k]] <- sampling_probability(MFHap, FBwgts, Jset[[k]], d, epsilon)
-  Gsample <- conditional_sampler(Prob[[k]])
-  Gres[,k] <- Gsample$Zm + Gsample$Zf
+  Prob[[k]] <- list(m = sampling_probability(Mmmat, Mfmat, MWgt, Jset[[k]], d, epsilon),
+                f = sampling_probability(Fmmat, Ffmat, FWgt, Jset[[k]], d, epsilon))
+  Gres[,k] <- conditional_sampler(Prob[[k]]$m) + conditional_sampler(Prob[[k]]$f)
 }
 Gres <- namer(Gres,'G',Jz)
 Probdat <- data.frame(matrix(unlist(Prob), nrow=N, byrow=FALSE))
@@ -181,7 +182,7 @@ print(paste('AR 95% CI: [', round(iv_full$AR$ci[1],2),', ',
 
 # ---- Generate test statistic distribution for one hypothesis ----
 # Null hypothesis
-beta0 <- 0.5
+beta0 <- -0.12
 
 # Test statistic is fixed effect regression of Y-beta0*D on Z
 #W <- NULL
@@ -190,7 +191,7 @@ W <- Probdat
 #W <- MFHapG
 TStat_obs <- tstat_calc(beta0,X=G,W=W)
 
-TStat_null <- tdist_calc(R=2e4,beta0,Prob,W,Jz,verbose=T)
+TStat_null <- tdist_calc(R=5e4,beta0,Prob,W,Jz,verbose=T)
 
 # p-value
 print(1-mean(TStat_obs >= TStat_null$beta0))

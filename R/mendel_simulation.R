@@ -19,16 +19,16 @@ Jset <- list(c(23,25,27),c(48,50,52),c(73,75,77),c(98,100,102),c(123,125,127))
 #Jset <- list(c(24,25,26),c(49,50,51),c(74,75,76),c(99,100,101),c(124,125,126))
 
 # Null hypotheses to test
-nullset <- c(-0.3,0,0.3,0.6); lnull <- length(nullset)
+nullset <- c(0,0.35); lnull <- length(nullset)
 
 # Number of permutations per test
 lperm <- 2000
 
 # Number of counterfactuals
-lcf <- 100
+lcf <- 500
 
 # ---- Set seed ---- #
-set.seed(1215)
+set.seed(1210)
 
 # ---- Function for naming data frames ---- #
 # Function for naming data frames
@@ -59,7 +59,6 @@ source('FAMMR_FILES/CODE/almost-exact-mr/src/unconditional_sampler.R')
 
 # ---- Function for computing the test statistic ----
 source('FAMMR_FILES/CODE/almost-exact-mr/src/test_statistic.R')
-
 
 # ---- Generate the genetic data ----
 # Sample size
@@ -99,7 +98,7 @@ Mfmat <- namer(Mfmat,'Mf',1:p)
 Fmmat <- namer(Fmmat,'Fm',1:p)
 Ffmat <- namer(Ffmat,'Ff',1:p)
 MFHap <- data.frame(Mmmat, Mfmat, Fmmat, Ffmat)
-rm(sigma, latent, threshold, out, Mmmat, Mfmat, Fmmat, Ffmat)
+rm(sigma, latent, threshold, out)
 
 # Unobserved offspring confounder
 C <- rnorm(N,0,1)
@@ -128,6 +127,10 @@ names(out) <- as.vector(paste('adj',adjset,sep=''))
 for(ja in 1:ladj) {
   for(jn in 1:lnull) {
     for(jc in 1:lcf) {
+      # ---- Status ---- #
+      cat(paste('Counterfactual:',jc,'\nH0: beta =',nullset[jn],
+                  '\nAdjustment set:',adjset[ja],'\n------------\n'))
+      
       # ---- Resample offspring genotype ---- #
       # Genetic data
       OHap <- unconditional_sampler(MFHap, p, d, epsilon)
@@ -143,12 +146,14 @@ for(ja in 1:ladj) {
       Y <- Y0 + bd*D + Z%*%bz
       
       # ---- Forward and backward weights ---- #
-      FBwgts <- fbweights(MFHap, OHap, p, d, epsilon)
+      MWgt <- fbweights(Mmmat, Mfmat, OHap$m, p, d, epsilon)
+      FWgt <- fbweights(Fmmat, Ffmat, OHap$f, p, d, epsilon)
       
       # ---- Conditional sampling probabilities ---- #
       Prob <- vector(mode="list", length=q)
       for(k in 1:q) {
-        Prob[[k]] <- sampling_probability(MFHap, FBwgts, Jset[[k]], d, epsilon)
+        Prob[[k]] <- list(m = sampling_probability(Mmmat, Mfmat, MWgt, Jset[[k]], d, epsilon),
+                          f = sampling_probability(Fmmat, Ffmat, FWgt, Jset[[k]], d, epsilon))
       }
       Probdat <- data.frame(matrix(unlist(Prob), nrow=N, byrow=FALSE))
       Probdat <- namer(Probdat,c('Pm','Pf'),Jz)
@@ -164,11 +169,9 @@ for(ja in 1:ladj) {
       
       TStat_obs <- tstat_calc(beta0,X=G,W=W)
       
-      TStat_null <- tdist_calc(R=lperm,beta0,Prob,W,Jz,verbose=T)
+      TStat_null <- tdist_calc(R=lperm,beta0,Prob,W,Jz,verbose=F)
       
       # p-value
-      print(paste('On counterfactual',jc,'testing null of',nullset[jn],
-                  'using adjustment set',adjset[ja]))
       out[[ja]][jc,jn] <- 1-mean(TStat_obs >= TStat_null$beta0)
     }
   }

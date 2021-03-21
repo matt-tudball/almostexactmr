@@ -15,12 +15,15 @@ tstat_calc <- function(beta0, X, W = NULL) {
 tdist_calc <- function(R, beta0, Prob, W = NULL, Jz, verbose=T) {
   q <- length(Jz)
   TStat_dist <- data.frame(sapply(X=1:R, function(x) {
-    if (verbose & x%%500==0) print(paste('Iteration:',x))
+    if (verbose) {
+      if(x==1) cat('1 ')
+      if(x%%1000==0) cat(paste(x/1000,'K',sep=''))
+      if(x%%100==0) cat('.')
+    }
     Gres <- matrix(nrow=N,ncol=q)
     # Construct resampled genetic instruments
     for(k in 1:q) {
-      Gsample <- conditional_sampler(Prob[[k]])
-      Gres[,k] <- Gsample$Zm + Gsample$Zf
+      Gres[,k] <- conditional_sampler(Prob[[k]]$m) + conditional_sampler(Prob[[k]]$f)
     }
     Gres <- namer(Gres,'G',Jz)
     # Compute test statistic
