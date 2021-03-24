@@ -1,5 +1,5 @@
 # Offspring haplotype (Markov chain model)
-sampling_probability <- function(Pm, Pf, W, Jset, d, epsilon) {
+prop_score <- function(Pm, Pf, W, Jset, d, epsilon) {
   # Indices for lower bound, marker and upper bound respectively
   l <- Jset[1]; j <- Jset[2]; h <- Jset[3]
   
