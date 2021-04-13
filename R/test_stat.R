@@ -1,6 +1,6 @@
 #' @name test_stat
 #' @title Test statistic
-#' @descriptipn Computes the test statistic as the F-statistic for the instruments
+#' @description Computes the test statistic as the F-statistic for the instruments
 #' from a linear regression of the adjusted outcome on the instruments and a user-specified
 #' set of covariates.
 #'

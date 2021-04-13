@@ -17,7 +17,9 @@ test_stat(beta, dat, ins)
 F-statistic for the instruments in the linear model
 }
 \description{
-Test statistic
+Computes the test statistic as the F-statistic for the instruments
+from a linear regression of the adjusted outcome on the instruments and a user-specified
+set of covariates.
 }
 \examples{
 
