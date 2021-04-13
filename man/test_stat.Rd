@@ -2,29 +2,23 @@
 % Please edit documentation in R/test_stat.R
 \name{test_stat}
 \alias{test_stat}
-\title{Compute test statistic (Should use lm.fit and allow a vector of beta, see example.)}
+\title{Test statistic}
 \usage{
-test_stat(beta, X, W = NULL)
+test_stat(beta, dat, ins)
 }
 \arguments{
-\item{beta}{null hypothesis}
+\item{beta}{Vector or scalar of null hypotheses}
 
-\item{X}{Data frame (or maybe matrix?) of instruments}
+\item{dat}{List of data}
 
-\item{W}{Covariates to adjust in linear model}
+\item{ins}{Matrix of instruments}
 }
 \value{
 F-statistic for the instruments in the linear model
 }
 \description{
-Compute test statistic (Should use lm.fit and allow a vector of beta, see example.)
+Test statistic
 }
 \examples{
-n <- 15000
-p <- 10
-X <- matrix(rnorm(n * p), n, p) # no intercept!
-y <- matrix(rnorm(n * 100), n, 100) # no intercept!
-system.time(lm.fit(x = X, y = y[, 1]))
-system.time(replicate(100, lm.fit(x = X, y = y[, 1])))
 
 }

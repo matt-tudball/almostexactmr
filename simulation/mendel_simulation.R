@@ -13,11 +13,11 @@ Jset <- list(c(23,25,27),c(48,50,52),c(73,75,77),c(98,100,102),c(123,125,127))
 #Jset <- list(c(24,25,26),c(49,50,51),c(74,75,76),c(99,100,101),c(124,125,126))
 
 # Null hypotheses to test
-nullvec <- seq(-2,2,0.5)
+nullvec <- 0 #seq(-2,2,0.5)
 lnull <- length(nullvec)
 
 # Number of counterfactuals
-lcf <- 1e3
+lcf <- 2e3
 
 # ---- Load package ---- #
 load_all(path='FAMMR_FILES/CODE/almostexactmr')
@@ -117,9 +117,11 @@ out <- t(pbsapply(X=1:lcf, cl=NULL, simplify=T, FUN=function(k) {
 
   # ---- Compute p-value ----
   results <- run_test(reps=2e3, beta=nullvec, dat=list(out=Y,exp=D,cov=W), prob=Prob,
-                      ins=G, nnodes=4, verbose=F)
+                      ins=G, nnodes=4, out=c("pvalues"), verbose=F)
   return(results$pvalues)
 }))
+
+hist(out)
 
 # ---- Save simulation results ---- #
 #saveRDS(out, file='FAMMR_FILES/DATA/test_statistic_sim_correct.rds')

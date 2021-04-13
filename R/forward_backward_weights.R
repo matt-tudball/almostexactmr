@@ -1,4 +1,5 @@
 #' @name fbweights
+#' @title Forward-backward algorithm
 #' @description Computes forward-backward weights via the forward-backward algorithm
 #'
 #' @param PHap Named list of mother or father haplotypes
@@ -40,27 +41,25 @@ fbweights <- function(PHap, CHap, d, epsilon=1e-8) {
 
   # Define forward weights recursively
   for (j in 2:(p+1)) {
-    dat <- cbind(m = Pm[,j-1], f = Pf[,j-1], o = CHap[,j-1])
+    dat <- list(m = Pm[,j-1], f = Pf[,j-1], o = CHap[,j-1])
 
     # Initial forward weight
     if (j == 2) {
-      Fweight$m[,j] <- 0.5*prsnp(dat[,'m'],dat[,'o'])
-      Fweight$f[,j] <- 0.5*prsnp(dat[,'f'],dat[,'o'])
+      Fweight$m[,j] <- 0.5*prsnp(dat$m,dat$o)
+      Fweight$f[,j] <- 0.5*prsnp(dat$f,dat$o)
     }
 
     # Define remaining forward weights recursively
     if (j > 2) {
       # Forward weights one place behind
-      fback <- cbind(m = Fweight$m[,j-1], f = Fweight$f[,j-1])
+      fback <- list(m = Fweight$m[,j-1], f = Fweight$f[,j-1])
 
       # Recombination probability
       r_prob <- 0.5*(1+exp(-2*d[j-2]))
 
       # Additional forward weights
-      Fweight$m[,j] <- prsnp(dat[,'m'],dat[,'o'])*(r_prob*fback[,'m'] +
-                        (1-r_prob)*fback[,'f'])
-      Fweight$f[,j] <- prsnp(dat[,'f'],dat[,'o'])*((1-r_prob)*fback[,'m'] +
-                        r_prob*fback[,'f'])
+      Fweight$m[,j] <- prsnp(dat$m,dat$o)*(r_prob*fback$m + (1-r_prob)*fback$f)
+      Fweight$f[,j] <- prsnp(dat$f,dat$o)*((1-r_prob)*fback$m + r_prob*fback$f)
     }
   }
 
@@ -77,19 +76,17 @@ fbweights <- function(PHap, CHap, d, epsilon=1e-8) {
 
     # Define remaining backward weights recursively
     if(j < p) {
-      dat <- data.frame(m = Pm[,j+1], f = Pf[,j+1], o = CHap[,j+1])
+      dat <- list(m = Pm[,j+1], f = Pf[,j+1], o = CHap[,j+1])
 
       # Backward weights one place ahead
-      bfor <- cbind(m = Bweight$m[,j+1], f = Bweight$f[,j+1])
+      bfor <- list(m = Bweight$m[,j+1], f = Bweight$f[,j+1])
 
       # Recombination probability
       r_prob <- 0.5*(1+exp(-2*d[j]))
 
       # Additional backward weights
-      Bweight$m[,j] <- bfor[,'m']*r_prob*prsnp(dat[,'m'],dat[,'o']) +
-                      bfor[,'f']*(1-r_prob)*prsnp(dat[,'f'],dat[,'o'])
-      Bweight$f[,j] <- bfor[,'m']*(1-r_prob)*prsnp(dat[,'m'],dat[,'o']) +
-                      bfor[,'f']*r_prob*prsnp(dat[,'f'],dat[,'o'])
+      Bweight$m[,j] <- bfor$m*r_prob*prsnp(dat$m,dat$o) + bfor$f*(1-r_prob)*prsnp(dat$f,dat$o)
+      Bweight$f[,j] <- bfor$m*(1-r_prob)*prsnp(dat$m,dat$o) + bfor$f*r_prob*prsnp(dat$f,dat$o)
     }
   }
   return(list(b=Bweight, a=Fweight))

@@ -1,4 +1,5 @@
 #' @name prop_score
+#' @title Propensity scores
 #' @description Computes propensity scores for the instruments
 #'
 #' @param PHap Named list of mother or father haplotypes
@@ -25,16 +26,14 @@ prop_score <- function(PHap, CHap, Jset, d, epsilon=1e-8) {
     if(h == j+1) { r_probh = 1 } else { r_probh <- 0.5*(1+exp(-2*sum(d[j:(h-2)]))) }
 
     # Backward weights
-    beta <- cbind(m = W$b$m[,h-1], f = W$b$f[,h-1])
+    beta <- list(m = W$b$m[,h-1], f = W$b$f[,h-1])
 
     # Forward weights
-    alpha <- cbind(m = W$a$m[,l+1], f = W$a$f[,l+1])
+    alpha <- list(m = W$a$m[,l+1], f = W$a$f[,l+1])
 
     # Meiosis indicator distribution for parental haplotype
-    propm <- (r_probh*beta[,'m'] + (1-r_probh)*beta[,'f'])*(r_probl*alpha[,'m'] +
-              (1-r_probl)*alpha[,'f'])
-    propf <- ((1-r_probh)*beta[,'m'] + r_probh*beta[,'f'])*((1-r_probl)*alpha[,'m'] +
-              r_probl*alpha[,'f'])
+    propm <- (r_probh*beta$m + (1-r_probh)*beta$f)*(r_probl*alpha$m + (1-r_probl)*alpha$f)
+    propf <- ((1-r_probh)*beta$m + r_probh*beta$f)*((1-r_probl)*alpha$m + r_probl*alpha$f)
     PrPm <- propm/(propm+propf)
 
     # Probabilities for the offspring haplotypes

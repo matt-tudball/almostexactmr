@@ -1,4 +1,5 @@
 #' @name run_test
+#' @title Main randomisation inference test
 #' @description For a set of null hypotheses, computes the observed test statistic,
 #' null distribution of test statistics, p-values and confidence intervals
 #'
@@ -58,12 +59,24 @@ run_test <- function(reps, beta=0, dat, prob, ins, sig=0.05, nnodes=1, out=c("pv
   }
 
   pvalues <- sapply(1:length(beta), function(x) 1-mean(tobs[x] >= tnull[,x]))
-  id <- which(pvalues > sig)
-  ci <- c(-Inf,Inf)
-  if(pvalues[1] < sig) ci[1] <- beta[min(id)]
-  if(pvalues[length(pvalues)] < sig) ci[2] <- beta[max(id)]
 
-  main <- sapply(X=out, USE.NAMES=T, FUN=function(x) assign(x,eval(parse(text=x))))
+  if("ci" %in% out) {
+    id <- which(pvalues > sig)
+    ci <- c(-Inf,Inf)
+    if(pvalues[1] < sig) {
+      ci[1] <- beta[min(id)]
+    } else {
+      warning('Lower bound of CI is ill-defined.')
+    }
+
+    if(pvalues[length(pvalues)] < sig) {
+      ci[2] <- beta[max(id)]
+    } else {
+      warning('Upper bound of CI is ill-defined.')
+    }
+  }
+
+  main <- sapply(X=out, USE.NAMES=T, simplify=F, FUN=function(x) assign(x,eval(parse(text=x))))
   return(main)
 }
 

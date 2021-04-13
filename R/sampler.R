@@ -1,4 +1,5 @@
 #' @name sampler
+#' @title Haplotype sampler
 #' @description Samples a counterfactual offspring haplotype
 #'
 #' @param N Sample size
