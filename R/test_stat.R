@@ -4,9 +4,12 @@
 #' from a linear regression of the adjusted outcome on the instruments and a user-specified
 #' set of covariates.
 #'
-#' @param beta Vector or scalar of null hypotheses
-#' @param dat List of data
-#' @param ins Matrix of instruments
+#' @param beta Vector or scalar of null hypotheses to be tested.
+#' @param dat List of data which must be of the form \code{list(exp=, out=, cov=)}.
+#' \code{exp} is a vector containing the exposure variable, \code{out} is a vector
+#' containing the outcome variable and \code{cov} is a matrix containing the covariates
+#' to be included in the test statistic.
+#' @param ins Matrix of instruments.
 #'
 #' @return F-statistic for the instruments in the linear model
 #'

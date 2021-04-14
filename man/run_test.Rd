@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_test.R
 \name{run_test}
 \alias{run_test}
-\title{Main randomisation inference test}
+\title{Compute almost exact p-values and confidence intervals}
 \usage{
 run_test(
   reps,
@@ -21,22 +21,29 @@ run_test(
 
 \item{beta}{Vector or scalar of null hypotheses (default is 0)}
 
-\item{dat}{List of data}
+\item{dat}{List of data which must be of the form \code{list(exp=, out=, cov=)}.
+\code{exp} is a vector containing the exposure variable, \code{out} is a vector
+containing the outcome variable and \code{cov} is a matrix containing the covariates
+to be included in the test statistic.}
 
-\item{prob}{Sampling probabilities from \code{prop_score} function}
+\item{prob}{Sampling probabilities from the \code{prop_score} function.}
 
-\item{ins}{Matrix of instruments}
+\item{ins}{Matrix of instruments.}
 
-\item{sig}{Significance level (default is 0.05)}
+\item{sig}{Significance level (default is 0.05).}
 
-\item{nnodes}{Number of cores to use during parallel computing (default is 1)}
+\item{nnodes}{Number of cores to use during parallel computing (default is 1).}
 
-\item{out}{List of objects to return from the function (default is main statistics)}
+\item{out}{Vector of strings indicating which objects to return from the function.
+Options include: "pvalues" for p-values corresponding to \code{beta}; "ci" for a \code{sig}-level
+confidence interval obtained by inverting the test; "tobs" for the observed test statistic from
+\code{test_stat}; and "tnull" for the full vector or matrix of counterfactual
+test statistics (default is to return \code{c("pvalues","ci","tobs")}).}
 
-\item{verbose}{Choose whether to show the progress bar (default is TRUE)}
+\item{verbose}{Choose whether to show the progress bar (default is \code{TRUE})}
 }
 \value{
-F-statistic for the instruments in the linear model
+Named list of objects requested in \code{out}.
 }
 \description{
 For a set of null hypotheses, computes the observed test statistic,

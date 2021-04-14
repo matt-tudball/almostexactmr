@@ -7,11 +7,14 @@
 test_stat(beta, dat, ins)
 }
 \arguments{
-\item{beta}{Vector or scalar of null hypotheses}
+\item{beta}{Vector or scalar of null hypotheses to be tested.}
 
-\item{dat}{List of data}
+\item{dat}{List of data which must be of the form \code{list(exp=, out=, cov=)}.
+\code{exp} is a vector containing the exposure variable, \code{out} is a vector
+containing the outcome variable and \code{cov} is a matrix containing the covariates
+to be included in the test statistic.}
 
-\item{ins}{Matrix of instruments}
+\item{ins}{Matrix of instruments.}
 }
 \value{
 F-statistic for the instruments in the linear model

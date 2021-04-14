@@ -1,23 +1,30 @@
 #' @name run_test
-#' @title Main randomisation inference test
+#' @title Compute almost exact p-values and confidence intervals
 #' @description For a set of null hypotheses, computes the observed test statistic,
 #' null distribution of test statistics, p-values and confidence intervals
 #'
 #' @param reps Number of resamples
 #' @param beta Vector or scalar of null hypotheses (default is 0)
-#' @param dat List of data
-#' @param prob Sampling probabilities from \code{prop_score} function
-#' @param ins Matrix of instruments
-#' @param sig Significance level (default is 0.05)
-#' @param nnodes Number of cores to use during parallel computing (default is 1)
-#' @param out List of objects to return from the function (default is main statistics)
-#' @param verbose Choose whether to show the progress bar (default is TRUE)
+#' @param dat List of data which must be of the form \code{list(exp=, out=, cov=)}.
+#' \code{exp} is a vector containing the exposure variable, \code{out} is a vector
+#' containing the outcome variable and \code{cov} is a matrix containing the covariates
+#' to be included in the test statistic.
+#' @param prob Sampling probabilities from the \code{prop_score} function.
+#' @param ins Matrix of instruments.
+#' @param sig Significance level (default is 0.05).
+#' @param nnodes Number of cores to use during parallel computing (default is 1).
+#' @param out Vector of strings indicating which objects to return from the function.
+#' Options include: "pvalues" for p-values corresponding to \code{beta}; "ci" for a \code{sig}-level
+#' confidence interval obtained by inverting the test; "tobs" for the observed test statistic from
+#' \code{test_stat}; and "tnull" for the full vector or matrix of counterfactual
+#' test statistics (default is to return \code{c("pvalues","ci","tobs")}).
+#' @param verbose Choose whether to show the progress bar (default is \code{TRUE})
 #'
-#' @return F-statistic for the instruments in the linear model
+#' @return Named list of objects requested in \code{out}.
 #'
 #' @importFrom stats lm
-#' @importFrom parallel makeCluster clusterExport
-#' @importFrom pbapply pblapply
+#' @importFrom parallel clusterExport makeCluster
+#' @importFrom pbapply parSapply pblapply
 #'
 #' @examples
 #'

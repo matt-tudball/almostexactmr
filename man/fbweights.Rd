@@ -7,9 +7,13 @@
 fbweights(PHap, CHap, d, epsilon = 1e-08)
 }
 \arguments{
-\item{PHap}{Named list of mother or father haplotypes}
+\item{PHap}{Named list of parental haplotypes which must be of the form
+\code{list(m=, f=)}.\code{m} is a (0,1)-matrix of maternally-inherited haplotypes and
+\code{f} is a (0,1)-matrix of paternally-inherited haplotypes. Each row corresponds
+to an offspring and each column is a SNP.}
 
-\item{CHap}{Matrix of offspring haplotypes}
+\item{CHap}{(0,1)-matrix of offspring haplotypes. Each row corresponds
+to an offspring and each column is a SNP.}
 
 \item{d}{Vector of genetic distances corresponding to haplotypes in PHap and CHap}
 

@@ -2,8 +2,12 @@
 #' @title Forward-backward algorithm
 #' @description Computes forward-backward weights via the forward-backward algorithm
 #'
-#' @param PHap Named list of mother or father haplotypes
-#' @param CHap Matrix of offspring haplotypes
+#' @param PHap Named list of parental haplotypes which must be of the form
+#' \code{list(m=, f=)}.\code{m} is a (0,1)-matrix of maternally-inherited haplotypes and
+#' \code{f} is a (0,1)-matrix of paternally-inherited haplotypes. Each row corresponds
+#' to an offspring and each column is a SNP.
+#' @param CHap (0,1)-matrix of offspring haplotypes. Each row corresponds
+#' to an offspring and each column is a SNP.
 #' @param d Vector of genetic distances corresponding to haplotypes in PHap and CHap
 #' @param epsilon De novo mutation rate (default is 1e-8)
 #'
