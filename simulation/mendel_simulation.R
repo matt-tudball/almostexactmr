@@ -1,5 +1,5 @@
 rm(list=ls())
-require(ivmodel); require(car); require(ggplot2); require(mvtnorm)
+require(ivmodel); require(car); require(ggplot2); require(mvtnorm); require(devtools)
 
 setwd("C:/Users/ow18301/OneDrive - University of Bristol/MyFiles-Migrated/Documents")
 
@@ -13,7 +13,7 @@ Jset <- list(c(23,25,27),c(48,50,52),c(73,75,77),c(98,100,102),c(123,125,127))
 #Jset <- list(c(24,25,26),c(49,50,51),c(74,75,76),c(99,100,101),c(124,125,126))
 
 # Null hypotheses to test
-nullvec <- seq(-2,2,0.5)
+nullvec <- seq(-1.5,2,0.05)
 
 # Number of counterfactuals
 lcf <- 1e3
@@ -109,8 +109,8 @@ out <- t(pbsapply(X=1:lcf, cl=NULL, simplify=T, FUN=function(k) {
                f = prop_score(FHap, OHap$f, Jset, d))
 
   # ---- Choose adjustment set ---- #
-  W <- NULL
-  #W <- cbind(Prob$m, Prob$f)
+  #W <- NULL
+  W <- cbind(Prob$m, Prob$f)
   #W <- cbind(MFHapG$m, MFHapG$f)
   #W <- cbind(H, MFHapH$m, MFHapH$f)
 
@@ -121,16 +121,22 @@ out <- t(pbsapply(X=1:lcf, cl=NULL, simplify=T, FUN=function(k) {
 }))
 
 # ---- Save simulation results ---- #
-#saveRDS(out, file='FAMMR_FILES/DATA/uniform_null_test.rds')
+saveRDS(out, file='FAMMR_FILES/DATA/power_curve_2.rds')
+
+dat <- data.frame(x=nullvec,y=colMeans(out<0.05))
+
+ggplot(data=dat, aes(x=x, y=y, group=1)) +
+  geom_line()+
+  geom_point()
 
 # ---- Create plots ---- #
 out <- data.frame(out)
-val <- expand.grid(1:lnull, adjset)
-for(k in 1:nrow(val)) {
-  v <- paste('n',val[k,1],'a',val[k,2],sep='')
-  plot <- ggplot(out, aes_string(x=v)) +
+for(j in 1:ncol(out)) {
+  name <- colnames(out)[j]
+  plot <- ggplot(out, aes_string(x=name)) +
     geom_histogram(color="darkblue", fill="lightblue",bins=20,binwidth=0.05,center=0.025) +
-    xlab("p-value") + ylab("Count")
-  plot
-  ggsave(filename=paste("FAMMR_FILES/FIGURES/pvalue_",v,type=".pdf",sep=""),plot=plot,width=4,height=3)
+    xlab("p-value") + ylab("Count") + xlim(0,1)
+  print(plot)
+  ggsave(filename=paste("FAMMR_FILES/FIGURES/pvalue_adj3_null",j,type=".pdf",sep=""),plot=plot,width=4,height=3)
+  Sys.sleep(3)
 }

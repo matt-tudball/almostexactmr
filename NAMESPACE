@@ -2,7 +2,8 @@
 
 importFrom(parallel,clusterExport)
 importFrom(parallel,makeCluster)
-importFrom(pbapply,parSapply)
+importFrom(parallel,parSapply)
+importFrom(parallel,stopCluster)
 importFrom(pbapply,pblapply)
 importFrom(stats,lm)
 importFrom(stats,rbinom)

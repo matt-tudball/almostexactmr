@@ -23,8 +23,8 @@
 #' @return Named list of objects requested in \code{out}.
 #'
 #' @importFrom stats lm
-#' @importFrom parallel clusterExport makeCluster
-#' @importFrom pbapply parSapply pblapply
+#' @importFrom parallel clusterExport makeCluster parSapply stopCluster
+#' @importFrom pbapply pblapply
 #'
 #' @examples
 #'
@@ -48,15 +48,15 @@ run_test <- function(reps, beta=0, dat, prob, ins, sig=0.05, nnodes=1, out=c("pv
     }
   }
 
-  null_dist <- function(j) {
+  null_stat <- function(j) {
     Gres <- sapply(1:q, function(k) sampler(N,prob$m[,k]) + sampler(N,prob$f[,k]))
     return(test_stat(beta,dat,Gres))
   }
 
   if(verbose) {
-    tnull <- matrix(t(pbsapply(X=1:reps, cl = cl, simplify=T, FUN=null_dist)), ncol=length(beta))
+    tnull <- matrix(t(pbsapply(X=1:reps, cl = cl, simplify=T, FUN=null_stat)), ncol=length(beta))
   } else {
-    tnull <- matrix(t(parSapply(X=1:reps, cl = cl, simplify=T, FUN=null_dist)), ncol=length(beta))
+    tnull <- matrix(t(parSapply(X=1:reps, cl = cl, simplify=T, FUN=null_stat)), ncol=length(beta))
   }
 
   if (nnodes > 1) {
