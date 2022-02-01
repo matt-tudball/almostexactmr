@@ -1,7 +1,7 @@
 rm(list=ls())
-require(ivmodel); require(car); require(ggplot2); require(mvtnorm); require(devtools)
+require(ivmodel); require(car); require(ggplot2); require(mvtnorm); require(devtools); require(pbapply)
 
-setwd("C:/Users/ow18301/OneDrive - University of Bristol/MyFiles-Migrated/Documents")
+setwd("C:/Users/ow18301/OneDrive - University of Bristol/Documents")
 
 # ---- SIMULATION PARAMETERS ---- #
 # Choose variants to condition on
@@ -78,14 +78,14 @@ ac <- sqrt(0.075); bc <- sqrt(0.075)
 meansum <- 2*p*(1-integrate(pnorm,a,b)$value/(b-a)) # Mean
 Cm <- rnorm(N,(rowSums(MHap$m+MHap$f)-meansum)/p,1)
 Cf <- rnorm(N,(rowSums(FHap$m+FHap$f)-meansum)/p,1)
-am <- sqrt(0.03); af <- sqrt(0.03); bm <- sqrt(0.03); bf <- sqrt(0.03)
+am <- sqrt(0.075); af <- sqrt(0.075); bm <- sqrt(0.075); bf <- sqrt(0.075)
 
 # Exposure
-D0 <- am*Cm + af*Cf + ac*C + rnorm(N,0,sqrt(0.7))
+D0 <- am*Cm + af*Cf + ac*C + rnorm(N,0,sqrt(0.61))
 bd <- 0 # No effect of the exposure on the outcome
 
 # Outcome
-Y0 <- bm*Cm + bf*Cf + bc*C + rnorm(N,0,sqrt(0.7))
+Y0 <- bm*Cm + bf*Cf + bc*C + rnorm(N,0,sqrt(0.61))
 
 # Junk clean up
 rm(a,ac,af,am,b,bc,bf,bm,C,Cf,Cm,Jy,meansum,type)
@@ -123,12 +123,6 @@ out <- t(pbsapply(X=1:lcf, cl=NULL, simplify=T, FUN=function(k) {
 # ---- Save simulation results ---- #
 saveRDS(out, file='FAMMR_FILES/DATA/power_curve_2.rds')
 
-dat <- data.frame(x=nullvec,y=colMeans(out<0.05))
-
-ggplot(data=dat, aes(x=x, y=y, group=1)) +
-  geom_line()+
-  geom_point()
-
 # ---- Create plots ---- #
 out <- data.frame(out)
 for(j in 1:ncol(out)) {
@@ -137,6 +131,8 @@ for(j in 1:ncol(out)) {
     geom_histogram(color="darkblue", fill="lightblue",bins=20,binwidth=0.05,center=0.025) +
     xlab("p-value") + ylab("Count") + xlim(0,1)
   print(plot)
-  ggsave(filename=paste("FAMMR_FILES/FIGURES/pvalue_adj3_null",j,type=".pdf",sep=""),plot=plot,width=4,height=3)
+  ggsave(filename=paste("FAMMR_FILES/FIGURES/pvalue_correct_n",j,"a3",type=".pdf",sep=""),plot=plot,width=4,height=3)
   Sys.sleep(3)
 }
+
+

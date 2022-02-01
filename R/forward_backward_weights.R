@@ -68,7 +68,8 @@ fbweights <- function(PHap, CHap, d, epsilon=1e-8) {
   }
 
   # Construct backward weights
-  Bweight <- list(m = matrix(nrow=N, ncol=p), f = matrix(nrow=N, ncol=p))
+  Bweight <- list(m = matrix(nrow=N, ncol=p),
+                  f = matrix(nrow=N, ncol=p))
 
   # Define backward weights recursively
   for(j in p:1) {

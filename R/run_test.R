@@ -28,9 +28,10 @@
 #'
 #' @examples
 #'
-run_test <- function(reps, beta=0, dat, prob, ins, sig=0.05, nnodes=1, out=c("pvalues","ci","tobs"), verbose=T) {
-  q <- ncol(prob$m)
-  N <- nrow(prob$m)
+run_test <- function(reps, beta=0, dat, prob, rsid, sig=0.05, nnodes=1, out=c("pvalues","ci","tobs"), verbose=T) {
+  n <- length(prob)
+
+  ins <- OHap$m[,colnames(OHap$m) %in% rsid]
 
   tobs <- test_stat(beta=beta,dat=dat,ins=ins)
 
@@ -41,7 +42,7 @@ run_test <- function(reps, beta=0, dat, prob, ins, sig=0.05, nnodes=1, out=c("pv
   if (nnodes > 1) {
     if (get_os() == "windows") {
       cl <- makeCluster(min(reps, nnodes), outfile = "")
-      clusterExport(cl, c("sampler","test_stat","dat","prob","beta","N","q","reps"),
+      clusterExport(cl, c("sampler","test_stat","dat","prob","beta","n","reps"),
                     envir = environment())
     } else {
       cl <- nnodes
@@ -49,8 +50,8 @@ run_test <- function(reps, beta=0, dat, prob, ins, sig=0.05, nnodes=1, out=c("pv
   }
 
   null_stat <- function(j) {
-    Gres <- sapply(1:q, function(k) sampler(N,prob$m[,k]) + sampler(N,prob$f[,k]))
-    return(test_stat(beta,dat,Gres))
+    nins <- sampler(n,prob)
+    return(test_stat(beta,dat,nins))
   }
 
   if(verbose) {
