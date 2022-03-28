@@ -4,12 +4,12 @@
 \alias{test_stat}
 \title{Test statistic}
 \usage{
-test_stat(beta, dat, ins)
+test_stat(beta, pheno, ins)
 }
 \arguments{
 \item{beta}{Vector or scalar of null hypotheses to be tested.}
 
-\item{dat}{List of data which must be of the form \code{list(exp=, out=, cov=)}.
+\item{pheno}{List of phenoa which must be of the form \code{list(exp=, out=, cov=)}.
 \code{exp} is a vector containing the exposure variable, \code{out} is a vector
 containing the outcome variable and \code{cov} is a matrix containing the covariates
 to be included in the test statistic.}
@@ -23,7 +23,4 @@ F-statistic for the instruments in the linear model
 Computes the test statistic as the F-statistic for the instruments
 from a linear regression of the adjusted outcome on the instruments and a user-specified
 set of covariates.
-}
-\examples{
-
 }

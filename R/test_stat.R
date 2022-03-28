@@ -15,8 +15,6 @@
 #'
 #' @importFrom stats lm
 #'
-#' @examples
-#' @export
 test_stat <- function(beta, pheno, ins) {
   out <- pheno$out; exp <- pheno$exp; cov <- pheno$cov
   # Matrix of outcome variables

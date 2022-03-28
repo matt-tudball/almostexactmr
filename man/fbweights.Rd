@@ -2,9 +2,10 @@
 % Please edit documentation in R/forward_backward_weights.R
 \name{fbweights}
 \alias{fbweights}
+\alias{forward_backward_weights}
 \title{Forward-backward algorithm}
 \usage{
-fbweights(PHap, CHap, d, epsilon = 1e-08)
+forward_backward_weights(PHap, CHap, dist, epsilon = 1e-08)
 }
 \arguments{
 \item{PHap}{Named list of parental haplotypes which must be of the form
@@ -15,9 +16,9 @@ to an offspring and each column is a SNP.}
 \item{CHap}{(0,1)-matrix of offspring haplotypes. Each row corresponds
 to an offspring and each column is a SNP.}
 
-\item{d}{Vector of genetic distances corresponding to haplotypes in PHap and CHap}
-
 \item{epsilon}{De novo mutation rate (default is 1e-8)}
+
+\item{d}{Vector of genetic distances corresponding to haplotypes in PHap and CHap}
 }
 \value{
 Named list of forward-backward weights

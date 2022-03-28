@@ -6,7 +6,6 @@
 #'
 #' @return Vector of offspring haplotypes
 #'
-#' @export
 sample_haplotype <- function(prob) {
   # Number of combinations of SNPs
   num.snps <- ncol(prob)

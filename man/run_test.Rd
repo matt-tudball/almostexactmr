@@ -7,13 +7,14 @@
 run_test(
   reps,
   beta = 0,
-  dat,
+  CHap,
+  PHap,
+  pheno,
   prob,
-  ins,
+  snps,
   sig = 0.05,
-  nnodes = 1,
-  out = c("pvalues", "ci", "tobs"),
-  verbose = T
+  cores = 1,
+  out = c("pvalues", "tobs")
 )
 }
 \arguments{
@@ -21,18 +22,16 @@ run_test(
 
 \item{beta}{Vector or scalar of null hypotheses (default is 0)}
 
-\item{dat}{List of data which must be of the form \code{list(exp=, out=, cov=)}.
+\item{pheno}{List of phenoa which must be of the form \code{list(exp=, out=, cov=)}.
 \code{exp} is a vector containing the exposure variable, \code{out} is a vector
 containing the outcome variable and \code{cov} is a matrix containing the covariates
 to be included in the test statistic.}
 
 \item{prob}{Sampling probabilities from the \code{prop_score} function.}
 
-\item{ins}{Matrix of instruments.}
-
 \item{sig}{Significance level (default is 0.05).}
 
-\item{nnodes}{Number of cores to use during parallel computing (default is 1).}
+\item{cores}{Number of cores to use during parallel computing (default is 1).}
 
 \item{out}{Vector of strings indicating which objects to return from the function.
 Options include: "pvalues" for p-values corresponding to \code{beta}; "ci" for a \code{sig}-level
@@ -40,7 +39,7 @@ confidence interval obtained by inverting the test; "tobs" for the observed test
 \code{test_stat}; and "tnull" for the full vector or matrix of counterfactual
 test statistics (default is to return \code{c("pvalues","ci","tobs")}).}
 
-\item{verbose}{Choose whether to show the progress bar (default is \code{TRUE})}
+\item{ins}{Matrix of instruments.}
 }
 \value{
 Named list of objects requested in \code{out}.
@@ -48,7 +47,4 @@ Named list of objects requested in \code{out}.
 \description{
 For a set of null hypotheses, computes the observed test statistic,
 null distribution of test statistics, p-values and confidence intervals
-}
-\examples{
-
 }

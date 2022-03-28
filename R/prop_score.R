@@ -16,7 +16,6 @@
 #'
 #' @return Matrix of propensity scores
 #'
-#' @examples
 #' @export
 
 # --- Main function ---

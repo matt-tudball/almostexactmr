@@ -4,7 +4,7 @@
 \alias{prop_score}
 \title{Propensity scores}
 \usage{
-prop_score(PHap, CHap, Jset, d, epsilon = 1e-08)
+prop_score(PHap, CHap, map, region, epsilon = 1e-08)
 }
 \arguments{
 \item{PHap}{Named list of parental haplotypes which must be of the form
@@ -15,18 +15,18 @@ to an offspring and each column is a SNP.}
 \item{CHap}{(0,1)-matrix of offspring haplotypes. Each row corresponds
 to an offspring and each column is a SNP.}
 
-\item{Jset}{List of indices for boundary and instrument SNPs.}
-
-\item{d}{Vector of genetic distances corresponding to haplotypes in PHap and CHap}
+\item{map}{Map file of genetic distances between each adjacent SNP. Must contain a
+variable called dist.}
 
 \item{epsilon}{De novo mutation rate (default is 1e-8)}
+
+\item{mb}{Distance in megabases from each instrument to start conditioning on chromosome.}
+
+\item{rsids}{rsID(s) of the instrument(s).}
 }
 \value{
 Matrix of propensity scores
 }
 \description{
 Computes propensity scores for the instruments
-}
-\examples{
-
 }

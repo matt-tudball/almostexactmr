@@ -24,7 +24,6 @@
 #' @importFrom parallel stopCluster
 #' @importFrom pbapply pblapply
 #'
-#' @examples
 #' @export
 run_test <- function(reps, beta=0, CHap, PHap, pheno, prob, snps, sig=0.05, cores=1, out=c("pvalues","tobs")) {
   n <- length(prob)
