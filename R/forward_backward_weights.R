@@ -15,7 +15,7 @@
 #'
 #' @examples
 #'
-fbweights <- function(PHap, CHap, d, epsilon=1e-8) {
+forward_backward_weights <- function(PHap, CHap, dist, epsilon=1e-8) {
   # Function for the probability of inheriting a SNP given meiosis indicator
   prsnp <- function(P,Q) {
     return(ifelse(P == Q, 1-epsilon, epsilon))
@@ -59,7 +59,7 @@ fbweights <- function(PHap, CHap, d, epsilon=1e-8) {
       fback <- list(m = Fweight$m[,j-1], f = Fweight$f[,j-1])
 
       # Recombination probability
-      r_prob <- 0.5*(1+exp(-2*d[j-2]))
+      r_prob <- 0.5*(1+exp(-2*dist[j-2]))
 
       # Additional forward weights
       Fweight$m[,j] <- prsnp(dat$m,dat$o)*(r_prob*fback$m + (1-r_prob)*fback$f)
@@ -87,12 +87,12 @@ fbweights <- function(PHap, CHap, d, epsilon=1e-8) {
       bfor <- list(m = Bweight$m[,j+1], f = Bweight$f[,j+1])
 
       # Recombination probability
-      r_prob <- 0.5*(1+exp(-2*d[j]))
+      r_prob <- 0.5*(1+exp(-2*dist[j]))
 
       # Additional backward weights
       Bweight$m[,j] <- bfor$m*r_prob*prsnp(dat$m,dat$o) + bfor$f*(1-r_prob)*prsnp(dat$f,dat$o)
       Bweight$f[,j] <- bfor$m*(1-r_prob)*prsnp(dat$m,dat$o) + bfor$f*r_prob*prsnp(dat$f,dat$o)
     }
   }
-  return(list(b=Bweight, a=Fweight))
+  return(list(backward=Bweight, forward=Fweight))
 }

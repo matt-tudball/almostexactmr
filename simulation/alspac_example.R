@@ -4,25 +4,35 @@ setwd("Z:/projects/ieu2/p1/096/working/data")
 library(devtools); library(ivmodel)
 
 # Phased offspring haplotypes
-OHap <- readRDS("haps/child_haps_chr18.rds")
+OHap <- readRDS("haps/child_haps_chr21.rds")
 
 # Phased maternal haplotypes
-MHap <- readRDS("haps/mother_haps_chr18.rds")
+MHap <- readRDS("haps/mother_haps_chr21.rds")
 
 # Phenotype data
 pheno <- readRDS("pheno/pheno_formatted.rds")
 
 # Genetic map
-map <- readRDS("haps/map_chr18.rds")
+map <- readRDS("haps/map_chr21.rds")
 
 # Load almostexactmr package
-load_all(path='~/FAMMR_FILES/CODE/almostexactmr')
+load_all(path='C:/Users/ow18301/OneDrive - University of Bristol/Documents/FAMMR_FILES/CODE/almostexactmr')
 
 # Format phenotype data
 pheno <- pheno[,colnames(pheno) %in% c("cidB3744","qlet","f7ms026a","dw042","geneticid")]
 
 bool <- (!(is.na(pheno$f7ms026a) | pheno$f7ms026a < 0)) &
         (!(is.na(pheno$dw042) | pheno$dw042 < 0))
+
+subset_hap <- function(dat, bool) {
+  if (nrow(dat) != length(bool)) stop("Lengths do not match...")
+
+  dat$id <- dat$id[bool]
+  dat$m <- dat$m[bool,]
+  dat$f <- dat$f[bool,]
+
+  return(dat)
+}
 
 pheno <- pheno[bool, ]
 OHap$id <- OHap$id[bool]
@@ -46,21 +56,23 @@ iv_model <- ivmodel(Y = pheno$dw042, D=pheno$f7ms026a, Z=iv)
 summary(iv_model)
 
 # Propensity scores
-prob <- prop_score(PHap=MHap,
-                   CHap=OHap$m,
-                   map=map,
-                   rsid=rsids,
-                   mb=1)
+prob <- prop_score(
+  PHap=MHap,
+  CHap=OHap$m,
+  map=map,
+  rsid=rsids,
+  mb=1)
 
 # Obtain results
-results <- run_test(reps=1e5,
-                    beta=0,
-                    dat=list(out=pheno$dw042,exp=pheno$f7ms026a,cov=prob),
-                    prob=prob,
-                    rsid=rsids,
-                    nnodes=4,
-                    out=c("pvalues","tobs","tnull"),
-                    verbose=T)
+results <- run_test(
+  reps=1e5,
+  beta=0,
+  dat=list(out=pheno$dw042, exp=pheno$f7ms026a, cov=prob),
+  prob=prob,
+  rsid=rsids,
+  nnodes=4,
+  out=c("pvalues", "tobs", "tnull"),
+  verbose=T)
 
 print(results$pvalues)
 
