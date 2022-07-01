@@ -51,6 +51,11 @@ forward_backward_weights <- function(PHap, CHap, dist, epsilon=1e-8) {
     if (j == 2) {
       Fweight$m[,j] <- 0.5*prsnp(dat$m,dat$o)
       Fweight$f[,j] <- 0.5*prsnp(dat$f,dat$o)
+
+      # Normalised weights
+      norm <- 1/(Fweight$m[,j] + Fweight$f[,j])
+      Fweight$m[,j] <- norm*Fweight$m[,j]
+      Fweight$f[,j] <- norm*Fweight$f[,j]
     }
 
     # Define remaining forward weights recursively
@@ -64,6 +69,11 @@ forward_backward_weights <- function(PHap, CHap, dist, epsilon=1e-8) {
       # Additional forward weights
       Fweight$m[,j] <- prsnp(dat$m,dat$o)*(r_prob*fback$m + (1-r_prob)*fback$f)
       Fweight$f[,j] <- prsnp(dat$f,dat$o)*((1-r_prob)*fback$m + r_prob*fback$f)
+
+      # NEW CODE
+      norm <- 1/(Fweight$m[,j] + Fweight$f[,j])
+      Fweight$m[,j] <- norm*Fweight$m[,j]
+      Fweight$f[,j] <- norm*Fweight$f[,j]
     }
   }
 
@@ -92,7 +102,13 @@ forward_backward_weights <- function(PHap, CHap, dist, epsilon=1e-8) {
       # Additional backward weights
       Bweight$m[,j] <- bfor$m*r_prob*prsnp(dat$m,dat$o) + bfor$f*(1-r_prob)*prsnp(dat$f,dat$o)
       Bweight$f[,j] <- bfor$m*(1-r_prob)*prsnp(dat$m,dat$o) + bfor$f*r_prob*prsnp(dat$f,dat$o)
+
+      # Normalised weights
+      norm <- 1/(Bweight$m[,j] + Bweight$f[,j])
+      Bweight$m[,j] <- norm*Bweight$m[,j]
+      Bweight$f[,j] <- norm*Bweight$f[,j]
     }
   }
+
   return(list(backward=Bweight, forward=Fweight))
 }

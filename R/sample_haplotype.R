@@ -11,13 +11,13 @@ sample_haplotype <- function(prob) {
   num.snps <- ncol(prob)
 
   # Each combination of 0 and 1 to describe possible alleles
-  vals.alleles <- sample_space(c(0,1), num.snps/2)
+  vals_alleles <- sample_space(c(0,1), num.snps/2)
 
   which.row <- sapply(X=1:nrow(prob), FUN=function(x) {
     sample(1:num.snps, size=1, prob=prob[x,])
   })
 
-  out <- vals.alleles[which.row,]
+  out <- vals_alleles[which.row,]
 
   return(out)
 }

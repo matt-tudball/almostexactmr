@@ -20,6 +20,9 @@
 
 # --- Main function ---
 prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
+  # Sanity check
+  if (nrow(map) != ncol(CHap)) stop("Length of genetic map does not match input data...")
+
   # Genetic distances
   dist <- map$dist[-1]
 
@@ -27,24 +30,24 @@ prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
   Weights <- forward_backward_weights(PHap, CHap, dist, epsilon)
 
   # Number of instruments
-  num.snps <- length(region$snps)
+  num_snps <- length(region$snps)
 
   # Positions of lower and upper instruments
-  snps.col <- sapply(X=region$snps, FUN=function(x) which(colnames(CHap) == x))
-  snps.pos <- sapply(X=region$snps, FUN=function(x) map$pos[map$rsid == x])
+  snps_col <- sapply(X=region$snps, FUN=function(x) which(colnames(CHap) == x))
+  snps_pos <- sapply(X=region$snps, FUN=function(x) map$pos[map$rsid == x])
 
   # Positions of lower and upper bounds
   l <- which(colnames(CHap) == region$lower)
   h <- which(colnames(CHap) == region$upper)
 
   # Data frame containing name, base position and column position of SNPs
-  dat.snps <- data.frame(name=region$snps, pos=snps.pos, col=snps.col)
+  dat_snps <- data.frame(name=region$snps, pos=snps_pos, col=snps_col)
 
   # Each combination of m and f to describe possible inheritance patterns
-  vals.meiosis <- sample_space(c("m","f"), num.snps)
+  vals_meiosis <- sample_space(c("m","f"), num_snps)
 
   # Probability of each inheritance pattern
-  probmf <- apply(X=vals.meiosis, MARGIN=1, FUN=function(x) {
+  probmf <- apply(X=vals_meiosis, MARGIN=1, FUN=function(x) {
     x.length <- length(x)
 
     prob <- full_prob(
@@ -52,7 +55,7 @@ prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
       CHap=CHap,
       Weights=Weights,
       dist=dist,
-      col=dat.snps$col[1],
+      col=dat_snps$col[1],
       l=l,
       h=h)
 
@@ -66,8 +69,8 @@ prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
           Weights=Weights,
           dist=dist,
           u=x[k-1],
-          dat=dat.snps,
-          col=dat.snps$col[k],
+          dat=dat_snps,
+          col=dat_snps$col[k],
           h=h)
 
         if(x[k] == "f") partial <- 1-partial
@@ -80,27 +83,27 @@ prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
   })
 
   # Each combination of 0 and 1 to describe possible alleles
-  vals.alleles <- sample_space(c(0,1), num.snps)
+  vals_alleles <- sample_space(c(0,1), num_snps)
 
   # Probability of each allele (this is the propensity score)
-  prop.score <- apply(X=vals.alleles, MARGIN=1, FUN=function(alleles) {
-    prob.emit <- apply(X=vals.meiosis, MARGIN=1, FUN=function(meiosis) {
+  score <- apply(X=vals_alleles, MARGIN=1, FUN=function(alleles) {
+    emit <- apply(X=vals_meiosis, MARGIN=1, FUN=function(meiosis) {
 
       prob <- sapply(X=1:length(meiosis), FUN=function(x) {
         bool <- as.integer(meiosis[x]=="m")
         P <- bool*PHap$m + (1-bool)*PHap$f
-        return(ifelse(P[,dat.snps$col[x]] == alleles[x], 1-epsilon, epsilon))
+        return(ifelse(P[,dat_snps$col[x]] == alleles[x], 1-epsilon, epsilon))
       })
 
       prob <- apply(X=prob, MARGIN=1, FUN=function(x) prod(x))
       return(prob)
     })
 
-    out <- sapply(X=1:nrow(vals.meiosis), FUN=function(x) probmf[,x]*prob.emit[,x])
+    out <- sapply(X=1:nrow(vals_meiosis), FUN=function(x) probmf[,x]*emit[,x])
     return(rowSums(out))
   })
 
-  return(prop.score)
+  return(score)
 }
 
 # --- Helper functions ---

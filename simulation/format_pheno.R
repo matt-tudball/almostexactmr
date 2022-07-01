@@ -2,10 +2,10 @@ rm(list=ls())
 setwd("Z:/projects/ieu2/p1/096/working/data")
 
 # Phased offspring haplotypes
-OHap <- readRDS("haps/child_haps.rds")
+OHap <- readRDS("haps/child_haps_chr21.rds")
 
 # Phenotype data
-raw <- read.csv("pheno/B3744_18Jun2021.csv", header=T)
+raw <- read.csv("pheno/B3744_Tilling_17Jan2022.csv", header=T)
 
 # Linker files (links phenotype ID with genetic ID)
 link <- read.csv("pheno/B3744_datasetids.csv", header=T)
