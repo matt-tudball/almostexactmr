@@ -21,7 +21,7 @@
 # --- Main function ---
 prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
   # Sanity check
-  if (nrow(map) != ncol(CHap)) stop("Length of genetic map does not match input data...")
+  if (!identical(colnames(CHap), map$rsid)) stop("SNP mismatch between map and input data...")
 
   # Genetic distances
   dist <- map$dist[-1]
