@@ -87,11 +87,14 @@ prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
 
   # Probability of each allele (this is the propensity score)
   score <- apply(X=vals_alleles, MARGIN=1, FUN=function(alleles) {
+
+    # Calculate emission probability
     emit <- apply(X=vals_meiosis, MARGIN=1, FUN=function(meiosis) {
 
       prob <- sapply(X=1:length(meiosis), FUN=function(x) {
         bool <- as.numeric(meiosis[x]=="m")
         P <- bool*PHap$m + (1-bool)*PHap$f
+
         return(ifelse(P[,dat_snps$col[x]] == alleles[x], 1-epsilon, epsilon))
       })
 

@@ -31,9 +31,11 @@ make_regions <- function(map, snps, mb) {
 
   # Cluster SNPs into regions, allowing for overlap.
   dat$region <- 1
-  for(i in 2:nrow(dat)) {
-    if ((dat$pos[i] >= dat$lower[i-1]) & (dat$pos[i] <= dat$upper[i-1])) dat$region[i] <- dat$region[i-1]
-    else dat$region[i] <- dat$region[i-1]+1
+  if(nrow(dat) > 1) {
+    for(i in 2:nrow(dat)) {
+      if ((dat$pos[i] >= dat$lower[i-1]) & (dat$pos[i] <= dat$upper[i-1])) dat$region[i] <- dat$region[i-1]
+      else dat$region[i] <- dat$region[i-1]+1
+    }
   }
 
   # Create a list summarising each region.
