@@ -12,6 +12,13 @@
 #' @export
 
 make_regions <- function(map, snps, mb) {
+  # Check that all supplied SNPs are found in the map file
+  bool <- sapply(X=snps, FUN=function(x) x %in% map$rsid)
+  if (!all(bool)) {
+    bad_snps <- paste(snps[!bool], collapse=", ")
+    stop(paste(bad_snps, "not found in map file"))
+  }
+
   # Create a data frame containing rsids, base position and lower and upper positions
   # for regions around each SNP.
   dat <- data.frame(snps=snps)

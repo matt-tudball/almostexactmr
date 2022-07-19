@@ -22,9 +22,9 @@ forward_backward_weights <- function(PHap, CHap, dist, epsilon=1e-8) {
   }
 
   # Check equality of rows and columns
-  if(!all(sapply(list(PHap$m, PHap$f, CHap), function(x) nrow(x) == nrow(MHap$m))))
+  if(!all(sapply(list(PHap$m, PHap$f, CHap), function(x) nrow(x) == nrow(PHap$m))))
     stop('Rows are not equal')
-  if(!all(sapply(list(PHap$m, PHap$f, CHap), function(x) ncol(x) == ncol(MHap$m))))
+  if(!all(sapply(list(PHap$m, PHap$f, CHap), function(x) ncol(x) == ncol(PHap$m))))
     stop('Columns are not equal')
 
   # Parental haplotypes
