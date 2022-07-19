@@ -90,7 +90,7 @@ prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
     emit <- apply(X=vals_meiosis, MARGIN=1, FUN=function(meiosis) {
 
       prob <- sapply(X=1:length(meiosis), FUN=function(x) {
-        bool <- as.integer(meiosis[x]=="m")
+        bool <- as.numeric(meiosis[x]=="m")
         P <- bool*PHap$m + (1-bool)*PHap$f
         return(ifelse(P[,dat_snps$col[x]] == alleles[x], 1-epsilon, epsilon))
       })
