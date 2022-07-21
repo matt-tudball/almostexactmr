@@ -32,8 +32,8 @@ run_test <- function(reps, beta=0, CHap, PHap, pheno, prob, snps, sig=0.05, core
 
   tobs <- test_stat(beta=beta, pheno=pheno, ins=ins)
 
+  os <- get_os()
   if(cores > 1) {
-    os <- get_os()
     if(os == "windows") cluster <- make_clusters(cores)
     else cluster <- cores
   }
