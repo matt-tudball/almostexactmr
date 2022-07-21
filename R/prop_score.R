@@ -50,28 +50,13 @@ prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
   probmf <- apply(X=vals_meiosis, MARGIN=1, FUN=function(x) {
     x.length <- length(x)
 
-    prob <- full_prob(
-      PHap=PHap,
-      CHap=CHap,
-      Weights=Weights,
-      dist=dist,
-      col=dat_snps$col[1],
-      l=l,
-      h=h)
+    prob <- full_prob(PHap=PHap, CHap=CHap, Weights=Weights, dist=dist, col=dat_snps$col[1], l=l, h=h)
 
     if(x[1] == "f") prob <- 1-prob
 
     if(length(x) > 1) {
       for(k in 2:x.length) {
-        partial <- partial_prob(
-          PHap=PHap,
-          CHap=CHap,
-          Weights=Weights,
-          dist=dist,
-          u=x[k-1],
-          dat=dat_snps,
-          col=dat_snps$col[k],
-          h=h)
+        partial <- partial_prob(PHap=PHap, CHap=CHap, Weights=Weights, dist=dist, u=x[k-1], dat=dat_snps, col=dat_snps$col[k], h=h)
 
         if(x[k] == "f") partial <- 1-partial
 

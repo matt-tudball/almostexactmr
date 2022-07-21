@@ -32,16 +32,21 @@ run_test <- function(reps, beta=0, CHap, PHap, pheno, prob, snps, sig=0.05, core
 
   tobs <- test_stat(beta=beta, pheno=pheno, ins=ins)
 
-  cluster <- make_clusters(cores)
+  if(cores > 1) {
+    os <- get_os()
+    if(os == "windows") cluster <- make_clusters(cores)
+    else cluster <- cores
+  }
+  else cluster <- NULL
 
   null_stat <- function(j) {
-    new.ins <- sample_haplotype(prob)
-    return(test_stat(beta, pheno, new.ins))
+    new_ins <- sample_haplotype(prob)
+    return(test_stat(beta, pheno, new_ins))
   }
 
   tnull <- matrix(t(pbapply::pbsapply(X=1:reps, cl = cluster, simplify=T, FUN=null_stat)), ncol=length(beta))
 
-  on.exit(parallel::stopCluster(cluster))
+  if(os == "windows" & cores > 1) on.exit(parallel::stopCluster(cluster))
 
   pvalues <- sapply(1:length(beta), function(x) 1-mean(tobs[x] >= tnull[,x]))
 
@@ -49,5 +54,21 @@ run_test <- function(reps, beta=0, CHap, PHap, pheno, prob, snps, sig=0.05, core
   return(main)
 }
 
+# Function to obtain name of operating system
+get_os <- function(){
+  sysinf <- Sys.info()
+  if (!is.null(sysinf)){
+    os <- sysinf['sysname']
+    if (os == 'Darwin')
+      os <- "osx"
+  } else {
+    os <- .Platform$OS.type
+    if (grepl("^darwin", R.version$os))
+      os <- "osx"
+    if (grepl("linux-gnu", R.version$os))
+      os <- "linux"
+  }
+  tolower(os)
+}
 
 

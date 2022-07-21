@@ -7,13 +7,15 @@
 #'
 #' @return A cluster object.
 #'
-#' @importFrom parallel makeCluster clusterExport 
+#' @importFrom parallel makeCluster clusterExport
 
 make_clusters <- function(cores=1) {
   cluster <- parallel::makeCluster(cores, outfile = "")
+
   parallel::clusterExport(
-    cl=cluster, 
-    varlist=c(ls(), as.vector(lsf.str(env=environment(run_test)))), 
-    envir = environment()) 
+    cl=cluster,
+    varlist=c(ls(), as.vector(lsf.str(env=environment(run_test)))),
+    envir = environment())
+
   return(cluster)
 }
