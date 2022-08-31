@@ -16,7 +16,7 @@ install_github("matt-tudball/almostexactmr")
 
 ## Example
 
-This is a basic example of a selection bias sensitivity analysis:
+This is a basic example of an almost exact test:
 
 ``` r
 library(almostexactmr)
@@ -24,4 +24,4 @@ library(almostexactmr)
 ```
 
 ## References
-TBD
+Tudball, M., Davey Smith, G., Zhao, Q. Almost exact Mendelian randomization. *arXiv*. https://arxiv.org/abs/2208.14035 (2022).
