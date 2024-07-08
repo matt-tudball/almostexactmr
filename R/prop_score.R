@@ -34,14 +34,13 @@ prop_score <- function(PHap, CHap, map, region, epsilon=1e-8) {
 
   # Positions of lower and upper instruments
   snps_col <- sapply(X=region$snps, FUN=function(x) which(colnames(CHap) == x))
-  snps_pos <- sapply(X=region$snps, FUN=function(x) map$pos[map$rsid == x])
 
   # Positions of lower and upper bounds
   l <- which(colnames(CHap) == region$lower)
   h <- which(colnames(CHap) == region$upper)
 
   # Data frame containing name, base position and column position of SNPs
-  dat_snps <- data.frame(name=region$snps, pos=snps_pos, col=snps_col)
+  dat_snps <- data.frame(name=region$snps, col=snps_col)
 
   # Each combination of m and f to describe possible inheritance patterns
   vals_meiosis <- sample_space(c("m","f"), num_snps)

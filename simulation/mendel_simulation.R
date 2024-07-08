@@ -1,17 +1,53 @@
 rm(list=ls())
-require(ivmodel); require(car); require(ggplot2); require(mvtnorm); require(devtools); require(pbapply)
+require(ivmodel); require(car); require(ggplot2); require(mvtnorm); require(devtools); require(pbapply); require(sim1000G)
 
-setwd("C:/Users/ow18301/OneDrive - University of Bristol/Documents")
+setwd()
+
+examples_dir = system.file("examples", package = "sim1000G")
+vcf_file = file.path(examples_dir, "region.vcf.gz")
+vcf = readVCF(vcf_file, maxNumberOfVariants = 567 , min_maf = 0.01 , max_maf = NA)
+readGeneticMap(chromosome = 4)
+
+genetic_map_of_region = system.file("examples",
+"chr4-geneticmap.txt",
+package = "sim1000G")
+readGeneticMapFromFile(genetic_map_of_region)
+
+n_parents <- 200 # Must be even
+n_children <- n_parents / 2 # One child per couple
+
+startSimulation(vcf, totalNumberOfIndividuals = n_parents + n_children)
+
+map <- data.frame(
+  rsid = do.call(paste, c(SIM$varinfo[,c("#CHROM","POS","REF","ALT")], sep='-')),
+  dist = c(NA, diff(SIM$cm))
+) # Genetic distances between SNPs
+
+id <- c()
+for(i in 1:n_parents) { 
+  id[i] <- SIM$addUnrelatedIndividual()
+}
+
+pairs <- split(id, rep(1:(length(id) / 2), each = 2)) # Pair up the parents
+names(pairs) <- NULL
+
+mother_id <- sapply(X = pairs, FUN = function(x) x[1])
+father_id <- sapply(X = pairs, FUN = function(x) x[2])
+
+MHap <- list(m = SIM$gt1[mother_id, ], f = SIM$gt2[mother_id, ])
+FHap <- list(m = SIM$gt1[father_id, ], f = SIM$gt2[father_id, ])
+colnames(MHap$m) <- colnames(MHap$f) <- colnames(FHap$m) <- colnames(FHap$f) <- map$rsid
+
+for (i in 1:n_children) {
+  id[n_parents + i] <- SIM$mate(pairs[[i]][1], pairs[[i]][2]) # Add children
+  pairs[[i]] <- c(pairs[[i]], n_parents + i)
+}
+child_id <- sapply(X = pairs, FUN = function(x) x[3])
+
+OHap <- list(m = SIM$gt1[child_id, ], f = SIM$gt2[child_id, ])
+colnames(OHap$m) <- colnames(OHap$f) <- map$rsid
 
 # ---- SIMULATION PARAMETERS ---- #
-# Choose variants to condition on
-# Bias from pleiotropy by linkage
-#Jset <- list(c(22,25,28),c(47,50,53),c(72,75,78),c(97,100,103),c(122,125,128))
-# Correct
-Jset <- list(c(23,25,27),c(48,50,52),c(73,75,77),c(98,100,102),c(123,125,127))
-# No power
-#Jset <- list(c(24,25,26),c(49,50,51),c(74,75,76),c(99,100,101),c(124,125,126))
-
 # Null hypotheses to test
 nullvec <- seq(-1.5,2,0.05)
 
@@ -19,52 +55,29 @@ nullvec <- seq(-1.5,2,0.05)
 lcf <- 1e3
 
 # ---- Load package ---- #
-load_all(path='FAMMR_FILES/CODE/almostexactmr')
+load_all(path='/home/matt-tudball/code/almostexactmr')
 
 # ---- Generate the genetic data ----
 # Sample size
-N <- 1.5e4
+N <- n_children
 
 # Parental haplotypes
-p <- 150 # Number of sites
+p <- ncol(OHap$m) # Number of sites
 
 # Set of instruments
-Jz <- c(25,50,75,100,125)
+Jz <- c(300)
 q <- length(Jz)
 az <- rep(0,p); az[Jz-1] <- sqrt(0.5/q)
 
 # Pleiotropic instruments
-Jy <- c(23,27,48,52,73,77,98,102,123,127)
+Jy <- c(100)
 bz <- rep(0,p); bz[Jy] <- sqrt(0.5/length(Jy))
 
-# Morgan distance between two SNPs
-d <- runif(p-1,0,0.75)
-d[c(37,62,86,112)] <- Inf # These SNPs are independent (e.g. different chromosome)
-
 # ---- Choose variants to condition on ---- #
-# Pleiotropy
-#Jset <- list(c(22,25,28),c(47,50,53),c(72,75,78),c(97,100,103),c(122,125,128))
-# Correct
-Jset <- list(c(23,25,27),c(48,50,52),c(73,75,77),c(98,100,102),c(123,125,127))
-# No power
-#Jset <- list(c(24,25,26),c(49,50,51),c(74,75,76),c(99,100,101),c(124,125,126))
+Jset <- list(c(150, 300, 450))
 
 # ---- Generate the simulation data ----
-# Generate the parental haplotypes
-a <- qnorm(1-0.4); b <- qnorm(1-0.05) # Lower and upper values of threshold
-for(type in c('Mm','Mf','Fm','Ff')) {
-  sigma <- 0.75^abs(matrix(1:p - 1, nrow = p, ncol = p, byrow = TRUE) - (1:p - 1))
-  latent <- rmvnorm(N, mean = rep(0, p), sigma = sigma)
-  threshold <- runif(p, a, b)
-  out <- matrix(unlist(lapply(1:p, function(x) {1*(latent[,x] > threshold[x])})),ncol=p,byrow=F)
-  assign(paste(type,'mat',sep=''), out)
-}
-MHap <- list(m = Mmmat, f = Mfmat)
-FHap <- list(m = Fmmat, f = Ffmat)
-rm(sigma, latent, threshold, out, Mmmat, Mfmat, Fmmat, Ffmat)
-
 # Genetic data
-OHap <- unconditional_sampler(MHap, FHap, p, d, epsilon=1e-8)
 Z <- OHap$m+OHap$f
 
 # Genetic instruments
@@ -75,20 +88,22 @@ C <- rnorm(N,0,1)
 ac <- sqrt(0.075); bc <- sqrt(0.075)
 
 # Unobserved dynastic confounder
-meansum <- 2*p*(1-integrate(pnorm,a,b)$value/(b-a)) # Mean
-Cm <- rnorm(N,(rowSums(MHap$m+MHap$f)-meansum)/p,1)
-Cf <- rnorm(N,(rowSums(FHap$m+FHap$f)-meansum)/p,1)
+meansum <- mean(rowSums(MHap$m + MHap$f)) # Mean
+Cm <- rnorm(N, (rowSums(MHap$m + MHap$f) - meansum) / p, 1)
+Cf <- rnorm(N, (rowSums(FHap$m + FHap$f) - meansum) / p, 1)
 am <- sqrt(0.075); af <- sqrt(0.075); bm <- sqrt(0.075); bf <- sqrt(0.075)
 
 # Exposure
-D0 <- am*Cm + af*Cf + ac*C + rnorm(N,0,sqrt(0.61))
+D0 <- am*Cm + af*Cf + ac*C + rnorm(N,0,sqrt(1 - am^2 - af^2 - ac^2))
 bd <- 0 # No effect of the exposure on the outcome
 
 # Outcome
-Y0 <- bm*Cm + bf*Cf + bc*C + rnorm(N,0,sqrt(0.61))
+Y0 <- bm*Cm + bf*Cf + bc*C + rnorm(N,0,sqrt(1 - bm^2 - bf^2 - bc^2))
 
 # Junk clean up
-rm(a,ac,af,am,b,bc,bf,bm,C,Cf,Cm,Jy,meansum,type)
+rm(ac,af,am,bc,bf,bm,C,Cf,Cm,Jy,meansum)
+
+region <- data.frame(lower=map$rsid[150], snps=map$rsid[300], upper=map$rsid[450])
 
 # ---- SIMULATION BEGINS HERE ---- #
 out <- t(pbsapply(X=1:lcf, cl=NULL, simplify=T, FUN=function(k) {
@@ -105,8 +120,8 @@ out <- t(pbsapply(X=1:lcf, cl=NULL, simplify=T, FUN=function(k) {
   Y <- Y0 + bd*D + Z%*%bz
 
   # ---- Conditional sampling probabilities ---- #
-  Prob <- list(m = prop_score(MHap, OHap$m, Jset, d),
-               f = prop_score(FHap, OHap$f, Jset, d))
+  Prob <- list(m = prop_score(MHap, OHap$m, map, region),
+               f = prop_score(FHap, OHap$f, map, region))
 
   # ---- Choose adjustment set ---- #
   #W <- NULL
@@ -115,8 +130,8 @@ out <- t(pbsapply(X=1:lcf, cl=NULL, simplify=T, FUN=function(k) {
   #W <- cbind(H, MFHapH$m, MFHapH$f)
 
   # ---- Compute p-value ----
-  results <- run_test(reps=2e3, beta=nullvec, dat=list(out=Y,exp=D,cov=W), prob=Prob,
-                      ins=G, nnodes=4, out=c("pvalues"), verbose=F)
+  results <- run_test(reps = 2e3, beta = nullvec, OHap$m, MHap, pheno=list(out=Y,exp=D,cov=W), prob=Prob,
+                      snps = region$snps, cores=4, out=c("pvalues"))
   return(results$pvalues)
 }))
 
