@@ -1,7 +1,34 @@
 rm(list=ls())
-require(ivmodel); require(car); require(ggplot2); require(mvtnorm); require(devtools); require(pbapply)
+require(ivmodel); require(car); require(ggplot2); require(mvtnorm); require(devtools); require(pbapply); require(bindata); require(parallel)
 
-setwd("C:/Users/ow18301/OneDrive - University of Bristol/Documents")
+setwd("/home/matt-tudball/code/almostexactmr")
+
+# Function to generate correlated Bernoulli draws
+generate_correlated_binom <- function(N, p, Sigma) {
+  # N     : number of samples
+  # p     : vector of marginal probabilities (length k)
+  # Sigma : k x k target correlation matrix
+  
+  k <- length(p)
+  if (!all(dim(Sigma) == c(k,k)))
+    stop("Sigma must be a square matrix with dimension = length(p)")
+  
+  X <- rmvbin(n = N,
+              margprob = p,
+              bincorr  = Sigma)
+  
+  colnames(X) <- paste0("V", seq_len(k))
+  return(X)
+}
+
+# ---- Load almostexactmr package ---- #
+load_all()
+
+# Overwrite functions with old ones
+source('simulation/old-functions/unconditional_sampler.R')
+source('simulation/old-functions/prop_score_sim.R')
+source('simulation/old-functions/run_test_sim.R')
+source('simulation/old-functions/sampler.R')
 
 # ---- SIMULATION PARAMETERS ---- #
 # Choose variants to condition on
@@ -16,10 +43,7 @@ Jset <- list(c(23,25,27),c(48,50,52),c(73,75,77),c(98,100,102),c(123,125,127))
 nullvec <- seq(-1.5,2,0.05)
 
 # Number of counterfactuals
-lcf <- 1e3
-
-# ---- Load package ---- #
-load_all(path='FAMMR_FILES/CODE/almostexactmr')
+lcf <- 1
 
 # ---- Generate the genetic data ----
 # Sample size
@@ -51,17 +75,20 @@ Jset <- list(c(23,25,27),c(48,50,52),c(73,75,77),c(98,100,102),c(123,125,127))
 
 # ---- Generate the simulation data ----
 # Generate the parental haplotypes
-a <- qnorm(1-0.4); b <- qnorm(1-0.05) # Lower and upper values of threshold
+# Instructions for using 1000 Genomes in place of simulated data
+# 1. Replace Sigma with an LD matrix from 1000 Genomes
+# 2. Replace maf with a vector of corresponding effect allele frequencies from 1000 Genomes. The ref/alt alleles 
+# must match those in the LD matrix
+# 3. Run generate_correlated_binom with the LD matrix and maf vector
+maf <- runif(p, 0.45, 0.5)
+Sigma <- 0.7^abs(matrix(1:p - 1, nrow = p, ncol = p, byrow = TRUE) - (1:p - 1))
 for(type in c('Mm','Mf','Fm','Ff')) {
-  sigma <- 0.75^abs(matrix(1:p - 1, nrow = p, ncol = p, byrow = TRUE) - (1:p - 1))
-  latent <- rmvnorm(N, mean = rep(0, p), sigma = sigma)
-  threshold <- runif(p, a, b)
-  out <- matrix(unlist(lapply(1:p, function(x) {1*(latent[,x] > threshold[x])})),ncol=p,byrow=F)
+  out <- generate_correlated_binom(N, maf, Sigma)
   assign(paste(type,'mat',sep=''), out)
 }
 MHap <- list(m = Mmmat, f = Mfmat)
 FHap <- list(m = Fmmat, f = Ffmat)
-rm(sigma, latent, threshold, out, Mmmat, Mfmat, Fmmat, Ffmat)
+rm(Sigma, out, Mmmat, Mfmat, Fmmat, Ffmat)
 
 # Genetic data
 OHap <- unconditional_sampler(MHap, FHap, p, d, epsilon=1e-8)
@@ -75,9 +102,8 @@ C <- rnorm(N,0,1)
 ac <- sqrt(0.075); bc <- sqrt(0.075)
 
 # Unobserved dynastic confounder
-meansum <- 2*p*(1-integrate(pnorm,a,b)$value/(b-a)) # Mean
-Cm <- rnorm(N,(rowSums(MHap$m+MHap$f)-meansum)/p,1)
-Cf <- rnorm(N,(rowSums(FHap$m+FHap$f)-meansum)/p,1)
+Cm <- rnorm(N,(rowSums(MHap$m+MHap$f)-p * 0.475)/p,1)
+Cf <- rnorm(N,(rowSums(FHap$m+FHap$f)-p * 0.475)/p,1)
 am <- sqrt(0.075); af <- sqrt(0.075); bm <- sqrt(0.075); bf <- sqrt(0.075)
 
 # Exposure
@@ -88,7 +114,7 @@ bd <- 0 # No effect of the exposure on the outcome
 Y0 <- bm*Cm + bf*Cf + bc*C + rnorm(N,0,sqrt(0.61))
 
 # Junk clean up
-rm(a,ac,af,am,b,bc,bf,bm,C,Cf,Cm,Jy,meansum,type)
+rm(ac,af,am,bc,bf,bm,C,Cf,Cm,Jy,type)
 
 # ---- SIMULATION BEGINS HERE ---- #
 out <- t(pbsapply(X=1:lcf, cl=NULL, simplify=T, FUN=function(k) {
@@ -116,7 +142,7 @@ out <- t(pbsapply(X=1:lcf, cl=NULL, simplify=T, FUN=function(k) {
 
   # ---- Compute p-value ----
   results <- run_test(reps=2e3, beta=nullvec, dat=list(out=Y,exp=D,cov=W), prob=Prob,
-                      ins=G, nnodes=4, out=c("pvalues"), verbose=F)
+                      ins=G, nnodes=4, out=c("pvalues"), verbose=TRUE)
   return(results$pvalues)
 }))
 
@@ -131,7 +157,7 @@ for(j in 1:ncol(out)) {
     geom_histogram(color="darkblue", fill="lightblue",bins=20,binwidth=0.05,center=0.025) +
     xlab("p-value") + ylab("Count") + xlim(0,1)
   print(plot)
-  ggsave(filename=paste("FAMMR_FILES/FIGURES/pvalue_correct_n",j,"a3",type=".pdf",sep=""),plot=plot,width=4,height=3)
+  ggsave(filename=paste("simulation/pvalue_correct_n",j,"a3",type=".pdf",sep=""),plot=plot,width=4,height=3)
   Sys.sleep(3)
 }
 
