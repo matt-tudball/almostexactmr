@@ -43,7 +43,7 @@ Jset <- list(c(23,25,27),c(48,50,52),c(73,75,77),c(98,100,102),c(123,125,127))
 nullvec <- seq(-1.5,2,0.05)
 
 # Number of counterfactuals
-lcf <- 1
+lcf <- 1e2
 
 # ---- Generate the genetic data ----
 # Sample size
